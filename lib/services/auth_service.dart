@@ -1,134 +1,218 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  // TODO: Update this with your actual server URL
-  static const String baseUrl = 'http://localhost/pos/backend';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
-  // Signup method
+  // Get current user
+  User? get currentUser => _auth.currentUser;
+  
+  // Auth state changes stream
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  
+  // Sign up method
   Future<Map<String, dynamic>> signUp({
     required String name,
     required String email,
     required String password,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/signup.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'name': name,
-          'email': email,
-          'password': password,
-        }),
+      // Create user with email and password
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
       
-      final data = json.decode(response.body);
+      // Update display name
+      await userCredential.user?.updateDisplayName(name);
       
-      if (response.statusCode == 201 && data['success'] == true) {
-        return {
-          'success': true,
-          'message': data['message'],
-          'data': data['data'],
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Signup failed',
-        };
+      // Store additional user data in Firestore
+      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+        'uid': userCredential.user!.uid,
+        'name': name,
+        'email': email,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      
+      // Save login state
+      await _saveLoginState(true);
+      
+      return {
+        'success': true,
+        'message': 'Account created successfully',
+        'data': {
+          'user': {
+            'uid': userCredential.user!.uid,
+            'name': name,
+            'email': email,
+          }
+        },
+      };
+    } on FirebaseAuthException catch (e) {
+      String message;
+      switch (e.code) {
+        case 'weak-password':
+          message = 'The password provided is too weak';
+          break;
+        case 'email-already-in-use':
+          message = 'An account already exists for this email';
+          break;
+        case 'invalid-email':
+          message = 'The email address is invalid';
+          break;
+        default:
+          message = e.message ?? 'Signup failed';
       }
+      return {
+        'success': false,
+        'message': message,
+      };
     } catch (e) {
       return {
         'success': false,
-        'message': 'Network error: ${e.toString()}',
+        'message': 'An error occurred: ${e.toString()}',
       };
     }
   }
   
-  // Login method
+  // Sign in method
   Future<Map<String, dynamic>> signIn({
     required String email,
     required String password,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/login.php'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': email,
-          'password': password,
-        }),
+      // Sign in with email and password
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
       
-      final data = json.decode(response.body);
+      // Get user data from Firestore
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
       
-      if (response.statusCode == 200 && data['success'] == true) {
-        // Save token and user data
-        await _saveAuthData(
-          token: data['data']['token'],
-          userData: data['data']['user'],
-        );
-        
-        return {
-          'success': true,
-          'message': data['message'],
-          'data': data['data'],
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Login failed',
-        };
+      final userData = userDoc.data();
+      
+      // Save login state
+      await _saveLoginState(true);
+      
+      return {
+        'success': true,
+        'message': 'Login successful',
+        'data': {
+          'user': {
+            'uid': userCredential.user!.uid,
+            'name': userData?['name'] ?? userCredential.user!.displayName,
+            'email': email,
+          }
+        },
+      };
+    } on FirebaseAuthException catch (e) {
+      String message;
+      switch (e.code) {
+        case 'user-not-found':
+          message = 'No user found for this email';
+          break;
+        case 'wrong-password':
+          message = 'Wrong password provided';
+          break;
+        case 'invalid-email':
+          message = 'The email address is invalid';
+          break;
+        case 'user-disabled':
+          message = 'This user account has been disabled';
+          break;
+        default:
+          message = e.message ?? 'Login failed';
       }
+      return {
+        'success': false,
+        'message': message,
+      };
     } catch (e) {
       return {
         'success': false,
-        'message': 'Network error: ${e.toString()}',
+        'message': 'An error occurred: ${e.toString()}',
       };
     }
   }
   
-  // Save auth data
-  Future<void> _saveAuthData({
-    required String token,
-    required Map<String, dynamic> userData,
-  }) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
-    await prefs.setString('user_data', json.encode(userData));
-    await prefs.setBool('is_logged_in', true);
-  }
-  
-  // Get current user
+  // Get current user data from Firestore
   Future<Map<String, dynamic>?> getCurrentUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
-    
-    if (!isLoggedIn) return null;
-    
-    final userDataString = prefs.getString('user_data');
-    if (userDataString == null) return null;
-    
-    return json.decode(userDataString);
-  }
-  
-  // Get auth token
-  Future<String?> getAuthToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token');
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return null;
+      
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+      
+      if (!userDoc.exists) return null;
+      
+      return userDoc.data();
+    } catch (e) {
+      return null;
+    }
   }
   
   // Check if user is logged in
   Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('is_logged_in') ?? false;
+    return _auth.currentUser != null;
   }
   
-  // Logout
+  // Sign out
   Future<void> signOut() async {
+    await _auth.signOut();
+    await _saveLoginState(false);
+  }
+  
+  // Save login state to shared preferences
+  Future<void> _saveLoginState(bool isLoggedIn) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_data');
-    await prefs.setBool('is_logged_in', false);
+    await prefs.setBool('is_logged_in', isLoggedIn);
+  }
+  
+  // Get user by ID
+  Future<Map<String, dynamic>?> getUserById(String uid) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      return userDoc.data();
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  // Update user profile
+  Future<bool> updateUserProfile({
+    String? name,
+    String? email,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      
+      Map<String, dynamic> updates = {
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      
+      if (name != null) {
+        await user.updateDisplayName(name);
+        updates['name'] = name;
+      }
+      
+      if (email != null) {
+        await user.updateEmail(email);
+        updates['email'] = email;
+      }
+      
+      await _firestore.collection('users').doc(user.uid).update(updates);
+      
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

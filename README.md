@@ -1,15 +1,15 @@
 # Smart POS & Inventory Management System
 
-A modern Point of Sale (POS) and Full Inventory Management application built with Flutter and PHP backend. Features glassmorphic UI design with dark blue iPhone-style aesthetics, online/offline mode support, and comprehensive inventory management capabilities.
+A modern Point of Sale (POS) and Full Inventory Management application built with Flutter and Firebase backend. Features glassmorphic UI design with dark blue iPhone-style aesthetics, online/offline mode support, and comprehensive inventory management capabilities.
 
 ## 📱 Features
 
-### Commit 1 (Current)
+### Current Features
 - ✅ Modern glassmorphic UI with dark blue gradient backgrounds
 - ✅ User authentication (Login/Signup)
-- ✅ PHP REST API backend
-- ✅ MySQL database integration
-- ✅ JWT token-based authentication
+- ✅ Firebase Authentication
+- ✅ Cloud Firestore database
+- ✅ Real-time auth state management
 - ✅ Form validation
 - ✅ Smooth animations and transitions
 - ✅ Responsive design
@@ -22,8 +22,7 @@ A modern Point of Sale (POS) and Full Inventory Management application built wit
 - 🔄 Sales & POS system
 - 🔄 Customer management
 - 🔄 Reports and analytics
-- 🔄 Google Drive backup
-- 🔄 Data restore functionality
+- 🔄 Cloud backup & restore
 
 ## 🛠️ Technology Stack
 
@@ -31,22 +30,18 @@ A modern Point of Sale (POS) and Full Inventory Management application built wit
 - **Flutter** 3.38.4
 - **State Management**: Provider
 - **Local Storage**: SharedPreferences, SQLite
-- **HTTP Client**: http package
 - **UI Components**: Custom glassmorphic widgets
 
 ### Backend
-- **PHP** 7.4+
-- **MySQL** 8.0+
-- **Authentication**: JWT tokens
-- **API Architecture**: REST
+- **Firebase Authentication** - Email/Password authentication
+- **Cloud Firestore** - NoSQL cloud database
+- **Firebase Core** - Firebase SDK integration
 
 ## 📋 Prerequisites
 
 - Flutter SDK 3.38.4 or higher
 - Dart SDK 3.10.3 or higher
-- PHP 7.4 or higher
-- MySQL 8.0 or higher
-- XAMPP/WAMP or any PHP server
+- Firebase account (free tier available)
 - Android Studio / VS Code
 - Git
 
@@ -58,34 +53,17 @@ git clone <repository-url>
 cd pos
 ```
 
-### 2. Backend Setup
+### 2. Firebase Setup
 
-#### Step 1: Start XAMPP/WAMP
-- Start Apache and MySQL services
+**Important:** You need to set up Firebase before the app will work. Follow the detailed instructions in `FIREBASE_SETUP.md`.
 
-#### Step 2: Create Database
-```bash
-# Open phpMyAdmin or use MySQL command line
-mysql -u root -p < backend/database/schema.sql
-```
-
-Or manually:
-1. Open phpMyAdmin (http://localhost/phpmyadmin)
-2. Create database `pos_db`
-3. Import `backend/database/schema.sql`
-
-#### Step 3: Configure Database
-- Update `backend/config/database.php` if your MySQL credentials differ:
-```php
-private $host = "localhost";
-private $db_name = "pos_db";
-private $username = "root";
-private $password = ""; // Your MySQL password
-```
-
-#### Step 4: Deploy Backend
-- Copy the `backend` folder to your web server's htdocs/www directory
-- Ensure it's accessible at `http://localhost/pos/backend`
+Quick summary:
+1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable Firebase Authentication (Email/Password method)
+3. Create a Firestore database
+4. Download and add configuration files:
+   - `google-services.json` → `android/app/`
+   - `GoogleService-Info.plist` → `ios/Runner/` (for iOS)
 
 ### 3. Flutter Setup
 
@@ -94,16 +72,7 @@ private $password = ""; // Your MySQL password
 flutter pub get
 ```
 
-#### Step 2: Update API URL
-- Open `lib/services/auth_service.dart`
-- Update the `baseUrl` with your backend URL:
-```dart
-static const String baseUrl = 'http://localhost/pos/backend';
-// Or use your IP for physical device testing
-// static const String baseUrl = 'http://192.168.1.100/pos/backend';
-```
-
-#### Step 3: Run the App
+#### Step 2: Run the App
 ```bash
 # For development
 flutter run
@@ -116,18 +85,6 @@ flutter build apk --release
 
 ```
 pos/
-├── backend/                    # PHP Backend
-│   ├── api/
-│   │   └── auth/
-│   │       ├── login.php      # Login endpoint
-│   │       └── signup.php     # Signup endpoint
-│   ├── config/
-│   │   └── database.php       # Database configuration
-│   ├── models/
-│   │   └── User.php           # User model
-│   └── database/
-│       └── schema.sql         # Database schema
-│
 ├── lib/                        # Flutter App
 │   ├── config/
 │   │   └── theme.dart         # App theme & colors
@@ -137,13 +94,14 @@ pos/
 │   │   ├── login_screen.dart  # Login screen
 │   │   └── signup_screen.dart # Signup screen
 │   ├── services/
-│   │   └── auth_service.dart  # Authentication service
+│   │   └── auth_service.dart  # Firebase auth service
 │   ├── widgets/
 │   │   ├── glassmorphic_container.dart
 │   │   ├── custom_text_field.dart
 │   │   └── gradient_button.dart
 │   └── main.dart              # App entry point
 │
+├── FIREBASE_SETUP.md          # Firebase setup guide
 └── README.md
 ```
 
@@ -162,32 +120,17 @@ The app features a modern glassmorphic design inspired by iPhone aesthetics:
 - Accent Blue: #3E5C9A
 - Light Blue: #6B8DD6
 
-## 🔌 API Endpoints
+## 🔌 Firebase Services
 
 ### Authentication
+- Email/Password authentication
+- Real-time auth state changes
+- Secure token management (handled by Firebase SDK)
 
-#### Signup
-```http
-POST /api/auth/signup.php
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
-
-#### Login
-```http
-POST /api/auth/login.php
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
+### Firestore Database
+- Users collection with user profiles
+- Real-time data synchronization
+- Offline persistence support
 
 ## 📱 Screenshots
 
@@ -195,17 +138,13 @@ _Screenshots will be added here_
 
 ## 🧪 Testing
 
-### Test Credentials
-```
-Email: test@example.com
-Password: password123
-```
-
-### Testing with Postman
-1. Import the API endpoints into Postman
-2. Test signup endpoint with new user data
-3. Test login endpoint with created credentials
-4. Verify token is returned
+### Testing Authentication
+1. Run the app
+2. Create a new account using the signup screen
+3. Verify user appears in Firebase Console → Authentication
+4. Log in with created credentials
+5. Test logout functionality
+6. Verify session persistence (close/reopen app)
 
 ## 👥 Team
 
@@ -219,10 +158,11 @@ This project is created for educational purposes as part of a lab assignment.
 
 ## 🚨 Important Notes
 
-- Update the backend URL in `auth_service.dart` before building
-- Ensure backend server is running when testing the app
-- For physical device testing, use your computer's IP address instead of localhost
-- Database credentials are set to default XAMPP values (root with no password)
+- **Firebase configuration is required** - Follow `FIREBASE_SETUP.md` before running the app
+- Add `google-services.json` to `android/app/` for Android builds
+- Firebase handles authentication tokens automatically
+- User data is stored in Firestore, not locally
+- Firestore security rules should be configured for production use
 
 ## 📞 Support
 

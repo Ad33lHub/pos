@@ -1,3 +1,5 @@
+// buildscript removed - handled in settings.gradle.kts
+
 allprojects {
     repositories {
         google()
