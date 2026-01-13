@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import '../../providers/customer_provider.dart';
 import '../../models/customer.dart';
+import '../../config/theme.dart';
 
 class AddCustomerScreen extends StatefulWidget {
   final Customer? customer; // For edit mode
@@ -76,7 +76,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(widget.customer == null ? 'Customer added' : 'Customer updated'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.success,
         ),
       );
       Navigator.pop(context);
@@ -84,7 +84,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.read<CustomerProvider>().error ?? 'Failed to save'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.error,
         ),
       );
     }
@@ -93,122 +93,111 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F2027),
-              Color(0xFF203A43),
-              Color(0xFF2C5364),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
+      backgroundColor: AppTheme.backgroundLight,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: AppTheme.textDark),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    widget.customer == null ? 'Add Customer' : 'Edit Customer',
+                    style: const TextStyle(
+                      color: AppTheme.textDark,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      widget.customer == null ? 'Add Customer' : 'Edit Customer',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
 
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildTextField(
-                          _nameController,
-                          'Name *',
-                          Icons.person,
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildTextField(
-                          _phoneController,
-                          'Phone *',
-                          Icons.phone,
-                          keyboardType: TextInputType.phone,
-                          validator: (v) => v == null || v.isEmpty ? 'Required' : null,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildTextField(_emailController, 'Email', Icons.email,
-                            keyboardType: TextInputType.emailAddress),
-                        const SizedBox(height: 16),
-                        _buildTextField(_addressController, 'Address', Icons.location_on,
-                            maxLines: 2),
-                        const SizedBox(height: 20),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildTextField(
+                        _nameController,
+                        'Name *',
+                        Icons.person,
+                        validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(
+                        _phoneController,
+                        'Phone *',
+                        Icons.phone,
+                        keyboardType: TextInputType.phone,
+                        validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(_emailController, 'Email', Icons.email,
+                          keyboardType: TextInputType.emailAddress),
+                      const SizedBox(height: 16),
+                      _buildTextField(_addressController, 'Address', Icons.location_on,
+                          maxLines: 2),
+                      const SizedBox(height: 20),
 
-                        // Customer type
-                        const Text('Customer Type', style: TextStyle(color: Colors.white, fontSize: 16)),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: RadioListTile<CustomerType>(
-                                title: const Text('Regular', style: TextStyle(color: Colors.white)),
-                                value: CustomerType.regular,
-                                groupValue: _selectedType,
-                                onChanged: (v) => setState(() => _selectedType = v!),
-                                activeColor: Colors.blue,
-                              ),
+                      // Customer type
+                      const Text('Customer Type', style: TextStyle(color: AppTheme.textDark, fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<CustomerType>(
+                              title: const Text('Regular', style: TextStyle(color: AppTheme.textDark)),
+                              value: CustomerType.regular,
+                              groupValue: _selectedType,
+                              onChanged: (v) => setState(() => _selectedType = v!),
+                              activeColor: AppTheme.primaryGreen,
                             ),
-                            Expanded(
-                              child: RadioListTile<CustomerType>(
-                                title: const Text('Walk-in', style: TextStyle(color: Colors.white)),
-                                value: CustomerType.walkIn,
-                                groupValue: _selectedType,
-                                onChanged: (v) => setState(() => _selectedType = v!),
-                                activeColor: Colors.blue,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 32),
-
-                        ElevatedButton(
-                          onPressed: _isLoading ? null : _saveCustomer,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                )
-                              : Text(widget.customer == null ? 'Add Customer' : 'Update Customer',
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          Expanded(
+                            child: RadioListTile<CustomerType>(
+                              title: const Text('Walk-in', style: TextStyle(color: AppTheme.textDark)),
+                              value: CustomerType.walkIn,
+                              groupValue: _selectedType,
+                              onChanged: (v) => setState(() => _selectedType = v!),
+                              activeColor: AppTheme.primaryGreen,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _saveCustomer,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryGreen,
+                          foregroundColor: AppTheme.textDark,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                      ],
-                    ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: AppTheme.textDark, strokeWidth: 2),
+                              )
+                            : Text(widget.customer == null ? 'Add Customer' : 'Update Customer',
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -222,34 +211,34 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     String? Function(String?)? validator,
     int maxLines = 1,
   }) {
-    return GlassmorphicContainer(
-      width: double.infinity,
-      height: 80,
-      borderRadius: 12,
-      blur: 15,
-      alignment: Alignment.center,
-      border: 2,
-      linearGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Colors.white.withOpacity(0.1), Colors.white.withOpacity(0.05)],
-      ),
-      borderGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Colors.white.withOpacity(0.5), Colors.white.withOpacity(0.2)],
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
         validator: validator,
         maxLines: maxLines,
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: AppTheme.textDark),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-          prefixIcon: Icon(icon, color: Colors.white.withOpacity(0.7)),
-          border: InputBorder.none,
+          labelStyle: const TextStyle(color: AppTheme.textGray),
+          prefixIcon: Icon(icon, color: AppTheme.textGray),
+          border: OutlineInputBorder(
+             borderRadius: BorderRadius.circular(12),
+             borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: AppTheme.cardWhite,
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),

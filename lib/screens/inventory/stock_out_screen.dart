@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/inventory_provider.dart';
 import '../../models/product.dart';
+import '../../config/theme.dart';
 
 class StockOutScreen extends StatefulWidget {
   const StockOutScreen({super.key});
@@ -61,7 +61,7 @@ class _StockOutScreenState extends State<StockOutScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Stock removed successfully'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.success,
         ),
       );
       Navigator.pop(context);
@@ -69,7 +69,7 @@ class _StockOutScreenState extends State<StockOutScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.read<InventoryProvider>().error ?? 'Failed to remove stock'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.error,
         ),
       );
     }
@@ -78,100 +78,77 @@ class _StockOutScreenState extends State<StockOutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F2027),
-              Color(0xFF203A43),
-              Color(0xFF2C5364),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Stock Out',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+      backgroundColor: AppTheme.backgroundLight,
+      appBar: AppBar(
+        title: const Text('Stock Out', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.cardWhite,
+        foregroundColor: AppTheme.textDark,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildProductSelector(),
+                      const SizedBox(height: 24),
+
+                      if (_selectedProduct != null) ...[
+                        _buildCurrentStockInfo(),
+                        const SizedBox(height: 24),
+                      ],
+
+                      _buildTextField(
+                        controller: _quantityController,
+                        label: 'Quantity to Remove *',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter quantity';
+                          }
+                          final qty = int.tryParse(value);
+                          if (qty == null || qty <= 0) {
+                            return 'Quantity must be greater than 0';
+                          }
+                          if (_selectedProduct != null && qty > _selectedProduct!.stockQuantity) {
+                            return 'Not enough stock (available: ${_selectedProduct!.stockQuantity})';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      const SizedBox(height: 24),
 
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildProductSelector(),
-                        const SizedBox(height: 16),
+                      if (_selectedProduct != null && _quantityController.text.isNotEmpty) ...[
+                        _buildNewStockPreview(),
+                        const SizedBox(height: 24),
+                      ],
 
-                        if (_selectedProduct != null) ...[
-                          _buildCurrentStockInfo(),
-                          const SizedBox(height: 16),
-                        ],
+                      _buildTextField(
+                        controller: _notesController,
+                        label: 'Notes (Optional)',
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 32),
 
-                        _buildTextField(
-                          controller: _quantityController,
-                          label: 'Quantity to Remove *',
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter quantity';
-                            }
-                            final qty = int.tryParse(value);
-                            if (qty == null || qty <= 0) {
-                              return 'Quantity must be greater than 0';
-                            }
-                            if (_selectedProduct != null && qty > _selectedProduct!.stockQuantity) {
-                              return 'Not enough stock (available: ${_selectedProduct!.stockQuantity})';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        if (_selectedProduct != null && _quantityController.text.isNotEmpty) ...[
-                          _buildNewStockPreview(),
-                          const SizedBox(height: 16),
-                        ],
-
-                        _buildTextField(
-                          controller: _notesController,
-                          label: 'Notes (Optional)',
-                          maxLines: 3,
-                        ),
-                        const SizedBox(height: 32),
-
-                        ElevatedButton(
+                      SizedBox(
+                        height: 56,
+                        child: ElevatedButton(
                           onPressed: _isLoading ? null : _stockOut,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
+                            backgroundColor: AppTheme.error, // Red for removing stock
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
+                            elevation: 0,
                           ),
                           child: _isLoading
                               ? const SizedBox(
@@ -185,18 +162,18 @@ class _StockOutScreenState extends State<StockOutScreen> {
                               : const Text(
                                   'Remove Stock',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -207,43 +184,37 @@ class _StockOutScreenState extends State<StockOutScreen> {
       builder: (context, provider, _) {
         final products = provider.products;
         
-        return GlassmorphicContainer(
-          width: double.infinity,
-          height: 60,
-          borderRadius: 16,
-          blur: 15,
-          alignment: Alignment.center,
-          border: 2,
-          linearGradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
-            ],
-          ),
-          borderGradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withOpacity(0.5),
-              Colors.white.withOpacity(0.2),
+        return Container(
+          decoration: BoxDecoration(
+            color: AppTheme.cardWhite,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.gray200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: DropdownButtonFormField<Product>(
               value: _selectedProduct,
-              dropdownColor: const Color(0xFF1A1A2E),
-              style: const TextStyle(color: Colors.white),
+              dropdownColor: AppTheme.cardWhite,
+              style: const TextStyle(color: AppTheme.textDark, fontSize: 16),
               decoration: const InputDecoration(
                 labelText: 'Select Product',
+                labelStyle: TextStyle(color: AppTheme.textGray),
                 border: InputBorder.none,
               ),
               items: products.map((product) {
                 return DropdownMenuItem(
                   value: product,
-                  child: Text('${product.name} (Stock: ${product.stockQuantity})'),
+                  child: Text(
+                    '${product.name} (Stock: ${product.stockQuantity})',
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 );
               }).toList(),
               onChanged: (value) {
@@ -257,52 +228,39 @@ class _StockOutScreenState extends State<StockOutScreen> {
   }
 
   Widget _buildCurrentStockInfo() {
-    return GlassmorphicContainer(
-     
-      width: double.infinity,
-      height: 80,
-      borderRadius: 16,
-      blur: 15,
-      alignment: Alignment.center,
-      border: 2,
-      linearGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.blue.withOpacity(0.1),
-          Colors.blue.withOpacity(0.05),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
-      borderGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.blue.withOpacity(0.5),
-          Colors.blue.withOpacity(0.2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Available Stock',
+            style: TextStyle(
+              color: AppTheme.textGray,
+              fontSize: 16,
+            ),
+          ),
+          Text(
+            '${_selectedProduct!.stockQuantity} units',
+            style: const TextStyle(
+              color: Colors.blue,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Available Stock',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: 16,
-              ),
-            ),
-            Text(
-              '${_selectedProduct!.stockQuantity} units',
-              style: const TextStyle(
-                color: Colors.blue,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -312,75 +270,62 @@ class _StockOutScreenState extends State<StockOutScreen> {
     final newStock = _selectedProduct!.stockQuantity - quantity;
     final willBeLowStock = newStock <= _selectedProduct!.lowStockThreshold;
     
-    return GlassmorphicContainer(
-     
-      width: double.infinity,
-      height: 80,
-      borderRadius: 16,
-      blur: 15,
-      alignment: Alignment.center,
-      border: 2,
-      linearGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          (willBeLowStock ? Colors.orange : Colors.red).withOpacity(0.1),
-          (willBeLowStock ? Colors.orange : Colors.red).withOpacity(0.05),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: (willBeLowStock ? Colors.orange : AppTheme.error).withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: (willBeLowStock ? Colors.orange : AppTheme.error).withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
-      borderGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          (willBeLowStock ? Colors.orange : Colors.red).withOpacity(0.5),
-          (willBeLowStock ? Colors.orange : Colors.red).withOpacity(0.2),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'New Stock',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 16,
-                  ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'New Stock',
+                style: TextStyle(
+                  color: AppTheme.textGray,
+                  fontSize: 16,
                 ),
-                Text(
-                  '$newStock units (-$quantity)',
-                  style: TextStyle(
-                    color: willBeLowStock ? Colors.orange : Colors.red,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+              ),
+              Text(
+                '$newStock units (-$quantity)',
+                style: TextStyle(
+                  color: willBeLowStock ? Colors.orange : AppTheme.error,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          if (willBeLowStock) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 18),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Stock will be below low stock threshold',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ),
               ],
             ),
-            if (willBeLowStock) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.orange[300], size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Stock will be below low stock threshold',
-                      style: TextStyle(
-                        color: Colors.orange[300],
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }
@@ -393,28 +338,17 @@ class _StockOutScreenState extends State<StockOutScreen> {
     List<TextInputFormatter>? inputFormatters,
     int maxLines = 1,
   }) {
-    return GlassmorphicContainer(
-     
-      width: double.infinity,
-      height: 80,
-      borderRadius: 16,
-      blur: 15,
-      alignment: Alignment.center,
-      border: 2,
-      linearGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.white.withOpacity(0.1),
-          Colors.white.withOpacity(0.05),
-        ],
-      ),
-      borderGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Colors.white.withOpacity(0.5),
-          Colors.white.withOpacity(0.2),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.gray200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: TextFormField(
@@ -424,10 +358,10 @@ class _StockOutScreenState extends State<StockOutScreen> {
         inputFormatters: inputFormatters,
         maxLines: maxLines,
         onChanged: (_) => setState(() {}),
-        style: const TextStyle(color: Colors.white),
+        style: const TextStyle(color: AppTheme.textDark),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+          labelStyle: const TextStyle(color: AppTheme.textGray),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -438,5 +372,3 @@ class _StockOutScreenState extends State<StockOutScreen> {
     );
   }
 }
-
-

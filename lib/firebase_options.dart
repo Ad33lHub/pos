@@ -42,50 +42,47 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyBSosjltFW11ltvV5vggPKT1FZDylcoER0',
-    appId: '1:904393828484:web:08023959fdd53596f93ad1',
+    appId: '1:904393828484:web:a2e0159ef789587bf93ad1',
     messagingSenderId: '904393828484',
     projectId: 'smart-pos-7c76c',
     authDomain: 'smart-pos-7c76c.firebaseapp.com',
     storageBucket: 'smart-pos-7c76c.firebasestorage.app',
-    measurementId: 'G-MD2BWSR6J1',
+    measurementId: 'G-SZ9GHBZ3WC',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA-IP6TUrrcMPng_7QYMUUYLLu1v2t53aY',
-    appId: '1:904393828484:android:3813bb07f87ec866f93ad1',
+    apiKey: 'YOUR_ANDROID_API_KEY',
+    appId: 'YOUR_ANDROID_APP_ID',
     messagingSenderId: '904393828484',
     projectId: 'smart-pos-7c76c',
     storageBucket: 'smart-pos-7c76c.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBYO2QW6GKGr-Ehyz6qOVAhbLi3O3Kkm_Y',
-    appId: '1:904393828484:ios:b1f337e554686107f93ad1',
+    apiKey: 'YOUR_IOS_API_KEY',
+    appId: 'YOUR_IOS_APP_ID',
     messagingSenderId: '904393828484',
     projectId: 'smart-pos-7c76c',
     storageBucket: 'smart-pos-7c76c.firebasestorage.app',
-    iosClientId: '904393828484-9fkroh4vgt4f3et4r49j2pgn1nov9vv2.apps.googleusercontent.com',
     iosBundleId: 'com.example.pos',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBYO2QW6GKGr-Ehyz6qOVAhbLi3O3Kkm_Y',
-    appId: '1:904393828484:ios:823395644d973194f93ad1',
+    apiKey: 'YOUR_MACOS_API_KEY',
+    appId: 'YOUR_MACOS_APP_ID',
     messagingSenderId: '904393828484',
     projectId: 'smart-pos-7c76c',
     storageBucket: 'smart-pos-7c76c.firebasestorage.app',
-    iosClientId: '904393828484-vs1qbdes5ce8mnrh881hqsglh2ksaoo7.apps.googleusercontent.com',
-    iosBundleId: 'com.smartpos.smartPos',
+    iosBundleId: 'com.example.pos',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
     apiKey: 'AIzaSyBSosjltFW11ltvV5vggPKT1FZDylcoER0',
-    appId: '1:904393828484:web:4211115e123d8bb9f93ad1',
+    appId: '1:904393828484:web:a2e0159ef789587bf93ad1',
     messagingSenderId: '904393828484',
     projectId: 'smart-pos-7c76c',
     authDomain: 'smart-pos-7c76c.firebaseapp.com',
     storageBucket: 'smart-pos-7c76c.firebasestorage.app',
-    measurementId: 'G-TTQG2BVC41',
+    measurementId: 'G-SZ9GHBZ3WC',
   );
-
 }

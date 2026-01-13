@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import '../models/customer.dart';
+import '../config/theme.dart';
 
 class CustomerCard extends StatelessWidget {
   final Customer customer;
@@ -16,136 +16,133 @@ class CustomerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: GlassmorphicContainer(
-        width: double.infinity,
-        height: 110,
-        borderRadius: 16,
-        blur: 15,
-        alignment: Alignment.center,
-        border: 2,
-        linearGradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.05),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardWhite,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
-        borderGradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: customer.hasBalance
-              ? [
-                  Colors.orange.withOpacity(0.6),
-                  Colors.orange.withOpacity(0.3),
-                ]
-              : [
-                  Colors.white.withOpacity(0.5),
-                  Colors.white.withOpacity(0.2),
-                ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      customer.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    customer.name,
+                    style: const TextStyle(
+                      color: AppTheme.textDark,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: customer.customerType == CustomerType.regular
+                        ? Colors.blue.withOpacity(0.1)
+                        : AppTheme.gray100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    customer.customerTypeString,
+                    style: TextStyle(
+                      color: customer.customerType == CustomerType.regular
+                          ? Colors.blue
+                          : AppTheme.textGray,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: customer.customerType == CustomerType.regular
-                          ? Colors.blue.withOpacity(0.3)
-                          : Colors.grey.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: customer.customerType == CustomerType.regular
-                            ? Colors.blue.withOpacity(0.5)
-                            : Colors.grey.withOpacity(0.5),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              customer.phone,
+              style: const TextStyle(
+                color: AppTheme.textGray,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Orders',
+                      style: TextStyle(
+                        color: AppTheme.textLight,
+                        fontSize: 11,
                       ),
                     ),
-                    child: Text(
-                      customer.customerTypeString,
-                      style: TextStyle(
-                        color: customer.customerType == CustomerType.regular
-                            ? Colors.blue[300]
-                            : Colors.grey[300],
-                        fontSize: 10,
+                    Text(
+                      '${customer.totalOrders}',
+                      style: const TextStyle(
+                        color: AppTheme.textDark,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                customer.phone,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: 13,
+                  ],
                 ),
-              ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Total Spent',
+                      style: TextStyle(
+                        color: AppTheme.textLight,
+                        fontSize: 11,
+                      ),
+                    ),
+                    Text(
+                      '\$${customer.totalPurchases.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: AppTheme.primaryGreen,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                if (customer.hasBalance)
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        'Orders: ${customer.totalOrders}',
+                      const Text(
+                        'Balance',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
-                          fontSize: 11,
+                          color: AppTheme.textLight,
+                          fontSize: 10,
                         ),
                       ),
                       Text(
-                        'Total: \$${customer.totalPurchases.toStringAsFixed(2)}',
+                        '\$${customer.outstandingBalance.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          color: Colors.green,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          color: AppTheme.error,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                  if (customer.hasBalance)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Balance',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
-                            fontSize: 10,
-                          ),
-                        ),
-                        Text(
-                          '\$${customer.outstandingBalance.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: Colors.orange,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );

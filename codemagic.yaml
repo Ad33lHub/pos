@@ -1,0 +1,121 @@
+workflows:
+  ios-workflow:
+    name: iOS Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      groups:
+        - firebase_credentials
+      vars:
+        FIREBASE_PROJECT_ID: "smart-pos-7c76c"
+        XCODE_WORKSPACE: "Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
+        BUNDLE_ID: "com.example.pos"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Set up code signing
+        script: |
+          # Configure code signing if needed
+          # This is a placeholder - configure based on your signing setup
+          echo "Code signing configuration"
+      
+      - name: Get Flutter dependencies
+        script: |
+          flutter pub get
+      
+      - name: Configure Firebase with FlutterFire CLI
+        script: |
+          # Install FlutterFire CLI
+          dart pub global activate flutterfire_cli
+          
+          # Add to PATH
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          
+          # Configure Firebase for iOS
+          # This will create/update GoogleService-Info.plist
+          flutterfire configure \
+            --project=$FIREBASE_PROJECT_ID \
+            --platforms=ios \
+            --ios-bundle-id=$BUNDLE_ID \
+            --yes
+      
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod install
+          cd ..
+      
+      - name: Build iOS app
+        script: |
+          flutter build ios --release --no-codesign
+      
+      - name: Build IPA (if code signing is configured)
+        script: |
+          # This requires proper code signing setup
+          # flutter build ipa --release
+          echo "IPA build requires code signing configuration"
+    
+    artifacts:
+      - build/ios/iphoneos/*.app
+      - build/ios/ipa/*.ipa
+    
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+
+  android-workflow:
+    name: Android Workflow
+    max_build_duration: 120
+    instance_type: linux_x2
+    environment:
+      groups:
+        - firebase_credentials
+      vars:
+        FIREBASE_PROJECT_ID: "smart-pos-7c76c"
+      flutter: stable
+      java: 17
+    scripts:
+      - name: Get Flutter dependencies
+        script: |
+          flutter pub get
+      
+      - name: Configure Firebase with FlutterFire CLI
+        script: |
+          # Install FlutterFire CLI
+          dart pub global activate flutterfire_cli
+          
+          # Add to PATH
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          
+          # Configure Firebase for Android
+          flutterfire configure \
+            --project=$FIREBASE_PROJECT_ID \
+            --platforms=android \
+            --android-package-name=com.example.pos \
+            --yes
+      
+      - name: Build Android APK
+        script: |
+          flutter build apk --release
+      
+      - name: Build Android App Bundle
+        script: |
+          flutter build appbundle --release
+    
+    artifacts:
+      - build/app/outputs/**/*.apk
+      - build/app/outputs/**/*.aab
+    
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true

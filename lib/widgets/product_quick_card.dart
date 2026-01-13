@@ -4,12 +4,12 @@ import '../config/theme.dart';
 
 class ProductQuickCard extends StatelessWidget {
   final Product product;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const ProductQuickCard({
     super.key,
     required this.product,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
@@ -18,27 +18,25 @@ class ProductQuickCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: AppTheme.cardWhite,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image Area
+            // Product Image or Placeholder
             Expanded(
-              flex: 3,
               child: Container(
-                width: double.infinity,
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  color: Colors.grey[100],
+                  color: AppTheme.gray50,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                   image: product.imageUrl != null
                       ? DecorationImage(
                           image: NetworkImage(product.imageUrl!),
@@ -47,53 +45,67 @@ class ProductQuickCard extends StatelessWidget {
                       : null,
                 ),
                 child: product.imageUrl == null
-                    ? Icon(Icons.inventory_2, color: Colors.grey[300], size: 40)
+                    ? Center(
+                        child: Icon(
+                          Icons.inventory_2_outlined,
+                          color: AppTheme.primaryGreen.withOpacity(0.5),
+                          size: 32,
+                        ),
+                      )
                     : null,
               ),
             ),
-
-            // Info Area
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      product.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: AppTheme.primaryBlack,
+            
+            // Details
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                      color: AppTheme.textDark,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '\$${product.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: AppTheme.primaryGreen,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '\$${product.price.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppTheme.primaryBlack,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: product.isLowStock 
+                              ? AppTheme.error.withOpacity(0.1) 
+                              : AppTheme.backgroundLight,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '${product.stockQuantity}',
+                          style: TextStyle(
+                            color: product.isLowStock 
+                                ? AppTheme.error 
+                                : AppTheme.textGray,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryGreen,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.add, size: 16, color: AppTheme.primaryBlack),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],

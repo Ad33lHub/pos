@@ -4,18 +4,18 @@ import '../config/theme.dart';
 
 class CartItemCard extends StatelessWidget {
   final CartItem item;
-  final VoidCallback onIncrement;
-  final VoidCallback onDecrement;
-  final VoidCallback onRemove;
+  final VoidCallback? onIncrement;
+  final VoidCallback? onDecrement;
+  final VoidCallback? onRemove;
   final VoidCallback? onPriceEdit;
   final VoidCallback? onDiscountEdit;
 
   const CartItemCard({
     super.key,
     required this.item,
-    required this.onIncrement,
-    required this.onDecrement,
-    required this.onRemove,
+    this.onIncrement,
+    this.onDecrement,
+    this.onRemove,
     this.onPriceEdit,
     this.onDiscountEdit,
   });
@@ -24,28 +24,27 @@ class CartItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.cardWhite,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       padding: const EdgeInsets.all(12),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Product Image
+          // Product Image (Placeholder matches mockup style)
           Container(
-            width: 70,
-            height: 70,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
+              color: AppTheme.gray100,
               borderRadius: BorderRadius.circular(12),
-              color: Colors.grey[100],
-              image: item.product.imageUrl != null
+              image: item.product.imageUrl != null 
                   ? DecorationImage(
                       image: NetworkImage(item.product.imageUrl!),
                       fit: BoxFit.cover,
@@ -53,11 +52,11 @@ class CartItemCard extends StatelessWidget {
                   : null,
             ),
             child: item.product.imageUrl == null
-                ? Icon(Icons.image, color: Colors.grey[400])
+                ? const Icon(Icons.inventory_2_outlined, color: AppTheme.gray400, size: 32)
                 : null,
           ),
           const SizedBox(width: 16),
-
+          
           // Details
           Expanded(
             child: Column(
@@ -66,66 +65,82 @@ class CartItemCard extends StatelessWidget {
                 Text(
                   item.product.name,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.primaryBlack,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textDark,
                   ),
                 ),
                 Text(
-                  item.product.description ?? 'No description',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.grey[500],
+                  '${item.quantity} units', 
+                  style: const TextStyle(
                     fontSize: 12,
+                    color: AppTheme.textGray,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '\$${(item.total).toStringAsFixed(2)}',
+                  '\$${item.total.toStringAsFixed(2)}',
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppTheme.primaryBlack,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textDark,
                   ),
                 ),
               ],
             ),
           ),
-
+          
           // Actions
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-               IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                  onPressed: onRemove,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
+              // Delete Icon
+              if (onRemove != null)
+                InkWell(
+                  onTap: onRemove,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
+                  ),
+                ),
+              const SizedBox(height: 12),
+              
+              // Quantity Control Pill
               Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: AppTheme.gray100, // Light gray pill
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove, size: 16),
-                      onPressed: onDecrement,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    InkWell(
+                      onTap: onDecrement,
+                      child: const Padding(
+                        padding: EdgeInsets.all(4.0),
+                        child: Icon(Icons.remove, size: 16, color: AppTheme.textDark),
+                      ),
                     ),
-                    Text(
-                      '${item.quantity}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        '${item.quantity}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textDark,
+                        ),
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.add, size: 16),
-                      onPressed: onIncrement,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                      color: AppTheme.successGreen,
+                    InkWell(
+                      onTap: onIncrement,
+                      child: const Padding(
+                        padding: EdgeInsets.all(4.0),
+                        child: Icon(Icons.add, size: 16, color: AppTheme.primaryGreen),
+                      ),
                     ),
                   ],
                 ),

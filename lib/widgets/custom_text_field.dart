@@ -31,9 +31,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white.withOpacity(0.1),
+        color: AppTheme.cardWhite,
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: AppTheme.gray300,
           width: 1.5,
         ),
       ),
@@ -43,17 +43,17 @@ class _CustomTextFieldState extends State<CustomTextField> {
         keyboardType: widget.keyboardType,
         validator: widget.validator,
         style: const TextStyle(
-          color: AppTheme.textWhite,
+          color: AppTheme.textDark,
           fontSize: 16,
         ),
         decoration: InputDecoration(
           hintText: widget.hintText,
-          hintStyle: TextStyle(
-            color: AppTheme.textGray.withOpacity(0.7),
+          hintStyle: const TextStyle(
+            color: AppTheme.textLight,
           ),
           prefixIcon: Icon(
             widget.prefixIcon,
-            color: AppTheme.lightBlue,
+            color: AppTheme.primaryGreen,
           ),
           suffixIcon: widget.isPassword
               ? IconButton(

@@ -24,9 +24,6 @@ class CartProvider with ChangeNotifier {
   // Calculate cart subtotal (sum of all item totals after their discounts)
   double get subtotal => _items.fold(0.0, (sum, item) => sum + item.total);
 
-  // Calculate total item-level discounts
-  double get totalItemDiscount => _items.fold(0.0, (sum, item) => sum + item.discountAmount);
-
   // Calculate cart discount amount
   double get cartDiscountAmount {
     if (_cartDiscount == 0) return 0;
